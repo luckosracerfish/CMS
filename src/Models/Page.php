@@ -73,4 +73,22 @@ class Page extends QuarxModel
 
         return $blocks;
     }
+
+    public function getLayoutsAttribute()
+    {
+        $layouts = new Layout();
+        foreach($this->blocks as $block => $data){
+            $layout = explode('_', $block);
+            if(isset($layout[1])){
+                if($exists = $layouts->where('layout', $layout[0])->first()){
+                    $exists->fields->push((object)['field' => $layout[1], 'value' => $data]);
+                } else {
+                    $fields = new Layout();
+                    $layouts->push((object)['layout' => $layout[0], 'fields' => $fields->push((object)['field' => $layout[1], 'value' => $data])]);
+                }
+            }
+        }
+
+        return $layouts;
+    }
 }

@@ -85,7 +85,6 @@ class PageRepository
             $payload['blocks'] = json_encode($blockCollection);
         }
 
-        $payload['title'] = htmlentities($payload['title']);
         $payload['url'] = Quarx::convertToURL($payload['url']);
         $payload['is_published'] = (isset($payload['is_published'])) ? (bool) $payload['is_published'] : 0;
         $payload['published_at'] = (isset($payload['published_at']) && !empty($payload['published_at'])) ? Carbon::parse($payload['published_at'])->format('Y-m-d H:i:s') : Carbon::now(config('app.timezone'))->format('Y-m-d H:i:s');
@@ -168,8 +167,6 @@ class PageRepository
             $path = FileService::saveFile($file, 'public/images', [], true);
             $payload['hero_image'] = $path['name'];
         }
-
-        $payload['title'] = htmlentities($payload['title']);
 
         if (!empty($payload['lang']) && $payload['lang'] !== config('quarx.default-language', 'en')) {
             return $this->translationRepo->createOrUpdate($page->id, 'Yab\Quarx\Models\Page', $payload['lang'], $payload);
