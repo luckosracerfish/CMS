@@ -1,10 +1,11 @@
 <?php
 
-namespace Yab\Quarx\Models;
+namespace Grafite\Cms\Models;
 
-use Yab\Quarx\Traits\Translatable;
+use Grafite\Cms\Models\CmsModel;
+use Grafite\Cms\Traits\Translatable;
 
-class FAQ extends QuarxModel
+class FAQ extends CmsModel
 {
     use Translatable;
 
@@ -16,6 +17,7 @@ class FAQ extends QuarxModel
 
     public static $rules = [
         'question' => 'required',
+        'answer' => 'required',
     ];
 
     protected $appends = [

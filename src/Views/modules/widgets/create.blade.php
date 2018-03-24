@@ -1,20 +1,20 @@
-@extends('quarx::layouts.dashboard')
+@extends('cms::layouts.dashboard')
+
+@section('pageTitle') Widgets @stop
 
 @section('content')
 
-    <div class="row">
-        <h1 class="page-header">Widgets</h1>
+    <div class="col-md-12 mt-2">
+        @include('cms::modules.widgets.breadcrumbs', ['location' => ['create']])
     </div>
 
-    @include('quarx::modules.widgets.breadcrumbs', ['location' => ['create']])
+    <div class="col-md-12">
+        {!! Form::open(['route' => cms()->route('widgets.store'), 'class' => 'add']) !!}
 
-    <div class="row">
-        {!! Form::open(['route' => config('quarx.backend-route-prefix', 'quarx').'.widgets.store', 'class' => 'add']) !!}
-
-            {!! FormMaker::fromTable('widgets', Config::get('quarx.forms.widget')) !!}
+            {!! FormMaker::fromTable('widgets', config('cms.forms.widget')) !!}
 
             <div class="form-group text-right">
-                <a href="{!! url(config('quarx.backend-route-prefix', 'quarx').'/widgets') !!}" class="btn btn-default raw-left">Cancel</a>
+                <a href="{!! cms()->url('widgets') !!}" class="btn btn-secondary raw-left">Cancel</a>
                 {!! Form::submit('Save', ['class' => 'btn btn-primary']) !!}
             </div>
 

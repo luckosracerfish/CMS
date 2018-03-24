@@ -1,12 +1,12 @@
 <?php
 
-namespace Yab\Quarx\Controllers;
+namespace Grafite\Cms\Controllers;
 
 use Illuminate\Filesystem\Filesystem;
-use Yab\Quarx\Services\AssetService;
-use Yab\Quarx\Controllers\QuarxController;
+use Grafite\Cms\Services\AssetService;
+use Grafite\Cms\Controllers\GrafiteCmsController;
 
-class AssetController extends QuarxController
+class AssetController extends GrafiteCmsController
 {
     public function __construct(AssetService $service)
     {

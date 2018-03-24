@@ -1,11 +1,12 @@
-@extends('quarx::layouts.dashboard')
+@extends('cms::layouts.dashboard')
+
+@section('pageTitle') Dashboard @stop
 
 @section('content')
 
     <div class="row">
         <div class="col-md-12">
-            <h1 class="page-header text-center">Dashboard</h1>
-                <p>The Quarx dashboard is powered by <b>Google Analytics</b> or by its own <b>Internal Analytics</b>.</p>
+                <p>The Cms dashboard is powered by <b>Google Analytics</b> or by its own <b>Internal Analytics</b>.</p>
 
                 <h3>Internal Analytics</h3>
                 <p>In order to use the internal analytics (just for this dashboard - you can still add your Google Analytics tracking to the site) simply run:</p>
@@ -35,8 +36,8 @@ php artisan vendor:publish
                 <p>You will need: <code>siteId</code>, <code>clientId</code> and <code>serviceEmail</code>. Additionally a <code>p12-file</code> is required.</p>
                 <p>To obtain these credentials start by going to the <a href="https://console.developers.google.com">Google Developers Console</a>.</p>
                 <p>If you don't have a project present in the console yet, create one.</p>
-                <p>If you click on the project name, you'll see a menu item <code>APIs</code> under <code>APIs & auth</code> on the left hand side. Click it to go the the Enabled API's screen. On that screen you should enable the Analytics API.</p>
-                <p>Now, again under the <code>APIs & Auth</code>-menu click <code>Credentials</code>.</p>
+                <p>If you click on the project name, you'll see a menu item <code>APIs</code> under <code>APIs &amp; auth</code> on the left hand side. Click it to go the the Enabled API's screen. On that screen you should enable the Analytics API.</p>
+                <p>Now, again under the <code>APIs &amp; Auth</code>-menu click <code>Credentials</code>.</p>
                 <p>On this screen you should press <code>Create new Client ID</code>. In the creation screen make sure you select application type <code>Service Account</code> and key type <code>P12-key</code>.</p>
 
                 <p>The creation of the Service Account generated a new public/private key pair and the <code>.p12-file</code> will get downloaded to your machine. Store this file in the location specified in the config file of this package.</p>

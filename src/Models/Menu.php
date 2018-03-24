@@ -1,8 +1,10 @@
 <?php
 
-namespace Yab\Quarx\Models;
+namespace Grafite\Cms\Models;
 
-class Menu extends QuarxModel
+use Grafite\Cms\Models\CmsModel;
+
+class Menu extends CmsModel
 {
     public $table = 'menus';
 

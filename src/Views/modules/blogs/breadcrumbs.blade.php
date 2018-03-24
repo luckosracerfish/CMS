@@ -1,9 +1,7 @@
-<div class="row">
+<nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-        <li><a href="{!! url(config('quarx.backend-route-prefix', 'quarx').'/blog') !!}">Blog</a></li>
-
-            {!! Quarx::breadcrumbs($location) !!}
-
+        <li class="breadcrumb-item"><a href="{!! cms()->url('blog') !!}">Blog</a></li>
+            {!! Cms::breadcrumbs($location) !!}
         <li class="active"></li>
     </ol>
-</div>
+</nav>

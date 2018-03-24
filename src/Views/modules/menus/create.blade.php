@@ -1,20 +1,20 @@
-@extends('quarx::layouts.dashboard')
+@extends('cms::layouts.dashboard')
+
+@section('pageTitle') Menus @stop
 
 @section('content')
 
-    <div class="row">
-        <h1 class="page-header">Menus</h1>
+    <div class="col-md-12 mt-2">
+        @include('cms::modules.menus.breadcrumbs', ['location' => ['create']])
     </div>
 
-    @include('quarx::modules.menus.breadcrumbs', ['location' => ['create']])
+    <div class="col-md-12">
+        {!! Form::open(['route' => cms()->route('menus.store'), 'class' => 'add']) !!}
 
-    <div class="row">
-        {!! Form::open(['route' => config('quarx.backend-route-prefix', 'quarx').'.menus.store', 'class' => 'add']) !!}
-
-            {!! FormMaker::fromTable('menus', Config::get('quarx.forms.menu')) !!}
+            {!! FormMaker::fromTable('menus', config('cms.forms.menu')) !!}
 
             <div class="form-group text-right">
-                <a href="{!! url(config('quarx.backend-route-prefix', 'quarx').'/menus') !!}" class="btn btn-default raw-left">Cancel</a>
+                <a href="{!! cms()->url('menus') !!}" class="btn btn-secondary float-left">Cancel</a>
                 {!! Form::submit('Save', ['class' => 'btn btn-primary']) !!}
             </div>
 

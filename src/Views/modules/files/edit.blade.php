@@ -1,24 +1,24 @@
-@extends('quarx::layouts.dashboard')
+@extends('cms::layouts.dashboard')
+
+@section('pageTitle') Files @stop
 
 @section('content')
 
-    <div class="row">
-        <h1 class="page-header">Files</h1>
+    <div class="col-md-12 mt-2">
+        @include('cms::modules.files.breadcrumbs', ['location' => ['edit']])
     </div>
 
-    @include('quarx::modules.files.breadcrumbs', ['location' => ['edit']])
-
-    <div class="row raw-margin-bottom-48 raw-margin-top-48 text-center">
-        <a class="btn btn-default" href="{!! FileService::fileAsDownload($files->name, $files->location) !!}"><span class="fa fa-download"></span> Download: {!! $files->name !!}</a>
+    <div class="col-md-12 raw-margin-bottom-48 raw-margin-top-48 text-center">
+        <a class="btn btn-secondary" href="{!! Cms::fileAsDownload($files->name, $files->location) !!}"><span class="fa fa-download"></span> Download: {!! $files->name !!}</a>
     </div>
 
-    <div class="row">
-        {!! Form::model($files, ['route' => [config('quarx.backend-route-prefix', 'quarx').'.files.update', $files->id], 'files' => true, 'method' => 'patch', 'class' => 'edit']) !!}
+    <div class="col-md-12">
+        {!! Form::model($files, ['route' => [cms()->route('files.update'), $files->id], 'files' => true, 'method' => 'patch', 'class' => 'edit']) !!}
 
-            {!! FormMaker::fromObject($files, Config::get('quarx.forms.file-edit')) !!}
+            {!! FormMaker::setColumns(2)->fromObject($files, config('cms.forms.file-edit')) !!}
 
             <div class="form-group text-right">
-                <a href="{!! url(config('quarx.backend-route-prefix', 'quarx').'/files') !!}" class="btn btn-default raw-left">Cancel</a>
+                <a href="{!! cms()->url('files') !!}" class="btn btn-secondary raw-left">Cancel</a>
                 {!! Form::submit('Save', ['class' => 'btn btn-primary']) !!}
             </div>
 
@@ -30,10 +30,10 @@
 @section('javascript')
 
     @parent
-    {!! Minify::javascript(Quarx::asset('js/bootstrap-tagsinput.min.js', 'application/javascript')) !!}
-    {!! Minify::javascript(Quarx::asset('packages/dropzone/dropzone.js', 'application/javascript')) !!}
-    {!! Minify::javascript(Quarx::asset('js/files-module.js', 'application/javascript')) !!}
-    {!! Minify::javascript(Quarx::asset('js/dropzone-custom.js', 'application/javascript')) !!}
+    {!! Minify::javascript(Cms::asset('js/bootstrap-tagsinput.min.js', 'application/javascript')) !!}
+    {!! Minify::javascript(Cms::asset('packages/dropzone/dropzone.js', 'application/javascript')) !!}
+    {!! Minify::javascript(Cms::asset('js/files-module.js', 'application/javascript')) !!}
+    {!! Minify::javascript(Cms::asset('js/dropzone-custom.js', 'application/javascript')) !!}
 
 @stop
 

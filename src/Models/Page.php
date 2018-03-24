@@ -1,11 +1,12 @@
 <?php
 
-namespace Yab\Quarx\Models;
+namespace Grafite\Cms\Models;
 
-use Yab\Quarx\Services\Normalizer;
-use Yab\Quarx\Traits\Translatable;
+use Grafite\Cms\Models\CmsModel;
+use Grafite\Cms\Services\Normalizer;
+use Grafite\Cms\Traits\Translatable;
 
-class Page extends QuarxModel
+class Page extends CmsModel
 {
     use Translatable;
 

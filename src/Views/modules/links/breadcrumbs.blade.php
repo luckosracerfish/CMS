@@ -1,6 +1,6 @@
-<div class="row">
+<nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-        {!! Quarx::breadcrumbs($location) !!}
+        {!! Cms::breadcrumbs($location) !!}
         <li class="active"></li>
     </ol>
-</div>
+</nav>

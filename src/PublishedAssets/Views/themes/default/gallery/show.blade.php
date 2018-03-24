@@ -1,4 +1,4 @@
-@extends('quarx-frontend::layout.master')
+@extends('cms-frontend::layout.master')
 
 @section('content')
 
@@ -21,6 +21,6 @@
 
 @endsection
 
-@section('quarx')
-    @edit('images')
+@section('cms')
+    <li class="nav-text">@edit('images')</li>
 @endsection

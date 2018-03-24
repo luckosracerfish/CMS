@@ -1,32 +1,34 @@
-@extends('quarx::layouts.dashboard')
+@extends('cms::layouts.dashboard')
+
+@section('pageTitle') Menus @stop
 
 @section('content')
 
-    <div class="row">
-        <h1 class="page-header">Menus</h1>
+    <div class="col-md-12 mt-2">
+        @include('cms::modules.menus.breadcrumbs', ['location' => ['edit']])
     </div>
 
-    @include('quarx::modules.menus.breadcrumbs', ['location' => ['edit']])
+    <div class="col-md-12">
+        {!! Form::model($menu, ['route' => [cms()->route('menus.update'), $menu->id], 'method' => 'patch', 'class' => 'edit']) !!}
 
-    <div class="row">
-        {!! Form::model($menu, ['route' => [config('quarx.backend-route-prefix', 'quarx').'.menus.update', $menu->id], 'method' => 'patch', 'class' => 'edit']) !!}
-
-            {!! FormMaker::fromObject($menu, Config::get('quarx.forms.menu')) !!}
+            {!! FormMaker::fromObject($menu, config('cms.forms.menu')) !!}
 
             <div class="form-group text-right">
-                <a href="{!! url(config('quarx.backend-route-prefix', 'quarx').'/menus') !!}" class="btn btn-default raw-left">Cancel</a>
+                <a href="{!! cms()->url('menus') !!}" class="btn btn-secondary float-left">Cancel</a>
                 {!! Form::submit('Save', ['class' => 'btn btn-primary']) !!}
             </div>
 
         {!! Form::close() !!}
     </div>
 
-    <div class="row raw-margin-top-24">
-        <div class="col-12">
-            <a class="btn btn-info pull-right" href="{!! url(config('quarx.backend-route-prefix', 'quarx').'/links/create?m='.$menu->id) !!}">Add Link</a>
-            <h1>Links <span class="small fa fa-info-circle" data-toggle="tooltip" title="Drag and drop to sort"></span></h1>
-            @include('quarx::modules.links.index')
-        </div>
+    <div class="col-md-12">
+        <hr class="mt-4 mb-4">
+    </div>
+
+    <div class="col-md-12">
+        <a class="btn btn-outline-primary float-right" href="{!! cms()->url('links/create?m='.$menu->id) !!}">Add Link</a>
+        <h5 class="pt-2">Links <small>(Drag and drop to sort)</small></h5>
+        @include('cms::modules.links.index')
     </div>
 
 @endsection
@@ -36,6 +38,6 @@
     @parent
     var _linkOrder = @if (!is_null($menu->order)) {!! $menu->order !!} @else [] @endif;
     var _id = {{ $menu->id }};
-    var _quarxUrl = _url + "/{{ config('quarx.backend-route-prefix') }}"
+    var _cmsUrl = _url + "/{{ config('cms.backend-route-prefix') }}";
 
 @stop

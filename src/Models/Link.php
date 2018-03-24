@@ -1,8 +1,10 @@
 <?php
 
-namespace Yab\Quarx\Models;
+namespace Grafite\Cms\Models;
 
-class Link extends QuarxModel
+use Grafite\Cms\Models\CmsModel;
+
+class Link extends CmsModel
 {
     public $table = 'links';
 

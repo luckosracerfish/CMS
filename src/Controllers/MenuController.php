@@ -1,28 +1,27 @@
 <?php
 
-namespace Yab\Quarx\Controllers;
+namespace Grafite\Cms\Controllers;
 
 use Exception;
 use Illuminate\Http\Request;
-use Quarx;
-use Yab\Quarx\Models\Menu;
-use Yab\Quarx\Repositories\LinkRepository;
-use Yab\Quarx\Repositories\MenuRepository;
-use Yab\Quarx\Requests\MenuRequest;
-use Yab\Quarx\Services\QuarxResponseService;
-use Yab\Quarx\Services\ValidationService;
+use Cms;
+use Grafite\Cms\Models\Menu;
+use Grafite\Cms\Repositories\LinkRepository;
+use Grafite\Cms\Repositories\MenuRepository;
+use Grafite\Cms\Requests\MenuRequest;
+use Grafite\Cms\Services\CmsResponseService;
+use Grafite\Cms\Services\ValidationService;
 
-class MenuController extends QuarxController
+class MenuController extends GrafiteCmsController
 {
-    /** @var MenuRepository */
-    private $menuRepository;
+    protected $linkRepository;
 
-    public function __construct(MenuRepository $menuRepo, LinkRepository $linkRepo)
+    public function __construct(MenuRepository $repository, LinkRepository $linkRepository)
     {
         parent::construct();
 
-        $this->menuRepository = $menuRepo;
-        $this->linkRepository = $linkRepo;
+        $this->repository = $repository;
+        $this->linkRepository = $linkRepository;
     }
 
     /**
@@ -32,9 +31,9 @@ class MenuController extends QuarxController
      */
     public function index()
     {
-        $result = $this->menuRepository->paginated();
+        $result = $this->repository->paginated();
 
-        return view('quarx::modules.menus.index')
+        return view('cms::modules.menus.index')
             ->with('menus', $result)
             ->with('pagination', $result->render());
     }
@@ -50,9 +49,9 @@ class MenuController extends QuarxController
     {
         $input = $request->all();
 
-        $result = $this->menuRepository->search($input);
+        $result = $this->repository->search($input);
 
-        return view('quarx::modules.menus.index')
+        return view('cms::modules.menus.index')
             ->with('menus', $result[0]->get())
             ->with('pagination', $result[2])
             ->with('term', $result[1]);
@@ -65,7 +64,7 @@ class MenuController extends QuarxController
      */
     public function create()
     {
-        return view('quarx::modules.menus.create');
+        return view('cms::modules.menus.create');
     }
 
     /**
@@ -78,23 +77,23 @@ class MenuController extends QuarxController
     public function store(Request $request)
     {
         try {
-            $validation = ValidationService::check(Menu::$rules);
+            $validation = app(ValidationService::class)->check(Menu::$rules);
 
             if (!$validation['errors']) {
-                $menu = $this->menuRepository->store($request->all());
-                Quarx::notification('Menu saved successfully.', 'success');
+                $menu = $this->repository->store($request->all());
+                Cms::notification('Menu saved successfully.', 'success');
 
                 if (!$menu) {
-                    Quarx::notification('Menu could not be saved.', 'danger');
+                    Cms::notification('Menu could not be saved.', 'danger');
                 }
             } else {
                 return $validation['redirect'];
             }
         } catch (Exception $e) {
-            Quarx::notification($e->getMessage() ?: 'Menu could not be saved.', 'danger');
+            Cms::notification($e->getMessage() ?: 'Menu could not be saved.', 'danger');
         }
 
-        return redirect(route($this->quarxRouteBase.'.menus.edit', [$menu->id]));
+        return redirect(route($this->routeBase.'.menus.edit', [$menu->id]));
     }
 
     /**
@@ -106,17 +105,17 @@ class MenuController extends QuarxController
      */
     public function edit($id)
     {
-        $menu = $this->menuRepository->findMenuById($id);
+        $menu = $this->repository->find($id);
 
         if (empty($menu)) {
-            Quarx::notification('Menu not found', 'warning');
+            Cms::notification('Menu not found', 'warning');
 
-            return redirect(route($this->quarxRouteBase.'.menus.index'));
+            return redirect(route($this->routeBase.'.menus.index'));
         }
 
         $links = $this->linkRepository->getLinksByMenu($menu->id);
 
-        return view('quarx::modules.menus.edit')->with('menu', $menu)->with('links', $links);
+        return view('cms::modules.menus.edit')->with('menu', $menu)->with('links', $links);
     }
 
     /**
@@ -130,25 +129,25 @@ class MenuController extends QuarxController
     public function update($id, MenuRequest $request)
     {
         try {
-            $menu = $this->menuRepository->findMenuById($id);
+            $menu = $this->repository->find($id);
 
             if (empty($menu)) {
-                Quarx::notification('Menu not found', 'warning');
+                Cms::notification('Menu not found', 'warning');
 
-                return redirect(route($this->quarxRouteBase.'.menus.index'));
+                return redirect(route($this->routeBase.'.menus.index'));
             }
 
-            $menu = $this->menuRepository->update($menu, $request->all());
-            Quarx::notification('Menu updated successfully.', 'success');
+            $menu = $this->repository->update($menu, $request->all());
+            Cms::notification('Menu updated successfully.', 'success');
 
             if (!$menu) {
-                Quarx::notification('Menu could not be updated.', 'danger');
+                Cms::notification('Menu could not be updated.', 'danger');
             }
         } catch (Exception $e) {
-            Quarx::notification($e->getMessage() ?: 'Menu could not be updated.', 'danger');
+            Cms::notification($e->getMessage() ?: 'Menu could not be updated.', 'danger');
         }
 
-        return redirect(route($this->quarxRouteBase.'.menus.edit', [$id]));
+        return redirect(route($this->routeBase.'.menus.edit', [$id]));
     }
 
     /**
@@ -160,19 +159,19 @@ class MenuController extends QuarxController
      */
     public function destroy($id)
     {
-        $menu = $this->menuRepository->findMenuById($id);
+        $menu = $this->repository->find($id);
 
         if (empty($menu)) {
-            Quarx::notification('Menu not found', 'warning');
+            Cms::notification('Menu not found', 'warning');
 
-            return redirect(route($this->quarxRouteBase.'.menus.index'));
+            return redirect(route($this->routeBase.'.menus.index'));
         }
 
         $menu->delete();
 
-        Quarx::notification('Menu deleted successfully.');
+        Cms::notification('Menu deleted successfully.');
 
-        return redirect(route($this->quarxRouteBase.'.menus.index'));
+        return redirect(route($this->routeBase.'.menus.index'));
     }
 
 
@@ -189,9 +188,9 @@ class MenuController extends QuarxController
      */
     public function setOrder($id, Request $request)
     {
-        $menu = $this->menuRepository->findMenuById($id);
-        $result =  $this->menuRepository->setOrder($menu, $request->except('_token'));
+        $menu = $this->repository->find($id);
+        $result = $this->repository->setOrder($menu, $request->except('_token'));
 
-        return QuarxResponseService::apiResponse('success', $result);
+        return app(CmsResponseService::class)->apiResponse('success', $result);
     }
 }

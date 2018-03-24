@@ -1,20 +1,20 @@
-@extends('quarx::layouts.dashboard')
+@extends('cms::layouts.dashboard')
+
+@section('pageTitle') FAQs @stop
 
 @section('content')
 
-    <div class="row">
-        <h1 class="page-header">FAQs</h1>
+    <div class="col-md-12 mt-2">
+        @include('cms::modules.faqs.breadcrumbs', ['location' => ['create']])
     </div>
 
-    @include('quarx::modules.faqs.breadcrumbs', ['location' => ['create']])
+    <div class="col-md-12">
+        {!! Form::open(['route' => cms()->route('faqs.store'), 'class' => 'add']) !!}
 
-    <div class="row">
-        {!! Form::open(['route' => config('quarx.backend-route-prefix', 'quarx').'.faqs.store', 'class' => 'add']) !!}
-
-            {!! FormMaker::fromTable('faqs', Config::get('quarx.forms.faqs')) !!}
+            {!! FormMaker::fromTable('faqs', config('cms.forms.faqs')) !!}
 
             <div class="form-group text-right">
-                <a href="{!! url(config('quarx.backend-route-prefix', 'quarx').'/faqs') !!}" class="btn btn-default raw-left">Cancel</a>
+                <a href="{!! cms()->url('faqs') !!}" class="btn btn-secondary float-left">Cancel</a>
                 {!! Form::submit('Save', ['class' => 'btn btn-primary']) !!}
             </div>
 

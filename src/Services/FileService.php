@@ -1,6 +1,6 @@
 <?php
 
-namespace Yab\Quarx\Services;
+namespace Grafite\Cms\Services;
 
 use CryptoService as CryptoServiceForFiles;
 use Exception;
@@ -19,7 +19,7 @@ class FileService
      *
      * @return string
      */
-    public static function getFileClass($file)
+    public function getFileClass($file)
     {
         $sections = explode(DIRECTORY_SEPARATOR, $file);
         $fileName = $sections[count($sections) - 1];
@@ -37,7 +37,7 @@ class FileService
      *
      * @return array
      */
-    public static function saveClone($fileName, $directory = '', $fileTypes = [])
+    public function saveClone($fileName, $directory = '', $fileTypes = [])
     {
         $fileInfo = pathinfo($fileName);
 
@@ -55,7 +55,7 @@ class FileService
             }
         }
 
-        Storage::disk(Config::get('quarx.storage-location', 'local'))->put($directory.$newFileName.'.'.$extension, file_get_contents($fileName));
+        Storage::disk(Config::get('cms.storage-location', 'local'))->put($directory.$newFileName.'.'.$extension, file_get_contents($fileName));
 
         return [
             'original' => basename($fileName),
@@ -71,7 +71,7 @@ class FileService
      *
      * @return array
      */
-    public static function saveFile($fileName, $directory = '', $fileTypes = [], $isImage = false)
+    public function saveFile($fileName, $directory = '', $fileTypes = [], $isImage = false)
     {
         if (is_object($fileName)) {
             $file = $fileName;
@@ -85,7 +85,7 @@ class FileService
             return false;
         }
 
-        if (File::size($file) > Config::get('quarx.max-file-upload-size', 6291456)) {
+        if (File::size($file) > Config::get('cms.max-file-upload-size', 6291456)) {
             throw new Exception('This file is too large', 1);
         }
 
@@ -103,14 +103,14 @@ class FileService
             }
         }
 
-        Storage::disk(Config::get('quarx.storage-location', 'local'))->put($directory.$newFileName.'.'.$extension, File::get($file));
+        Storage::disk(Config::get('cms.storage-location', 'local'))->put($directory.$newFileName.'.'.$extension, File::get($file));
 
            // Resize images only
         if ($isImage) {
-            $storage = Storage::disk(Config::get('quarx.storage-location', 'local'));
+            $storage = Storage::disk(Config::get('cms.storage-location', 'local'));
             $image = $storage->get($directory.$newFileName.'.'.$extension);
 
-            $image = InterventionImage::make($image)->resize(config('quarx.max-image-size', 800), null, function ($constraint) {
+            $image = InterventionImage::make($image)->resize(config('cms.max-image-size', 800), null, function ($constraint) {
                 $constraint->aspectRatio();
             });
 
@@ -133,7 +133,7 @@ class FileService
      *
      * @return string
      */
-    public static function fileAsPublicAsset($fileName)
+    public function fileAsPublicAsset($fileName)
     {
         return '/public-asset/'.CryptoServiceForFiles::url_encode($fileName);
     }
@@ -146,7 +146,7 @@ class FileService
      *
      * @return string
      */
-    public static function fileAsDownload($fileName, $realFileName)
+    public function fileAsDownload($fileName, $realFileName)
     {
         return '/public-download/'.CryptoServiceForFiles::url_encode($fileName).'/'.CryptoServiceForFiles::url_encode($realFileName);
     }
@@ -158,7 +158,7 @@ class FileService
      *
      * @return string
      */
-    public static function filePreview($fileName)
+    public function filePreview($fileName)
     {
         return '/public-preview/'.CryptoServiceForFiles::url_encode($fileName);
     }

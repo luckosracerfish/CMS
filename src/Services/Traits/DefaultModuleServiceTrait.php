@@ -1,11 +1,11 @@
 <?php
 
-namespace Yab\Quarx\Services\Traits;
+namespace Grafite\Cms\Services\Traits;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use Yab\Quarx\Repositories\WidgetRepository;
-use Yab\Quarx\Services\FileService;
+use Grafite\Cms\Repositories\WidgetRepository;
+use Grafite\Cms\Services\FileService;
 
 trait DefaultModuleServiceTrait
 {
@@ -32,14 +32,14 @@ trait DefaultModuleServiceTrait
      */
     public function widget($slug)
     {
-        $widget = WidgetRepository::getWidgetBySLUG($slug);
+        $widget = app(WidgetRepository::class)->getBySlug($slug);
 
         if ($widget) {
-            if (Gate::allows('quarx', Auth::user())) {
-                $widget->content .= '<a href="'.url(config('quarx.backend-route-prefix', 'quarx').'/widgets/'.$widget->id.'/edit').'" style="margin-left: 8px;" class="btn btn-xs btn-default"><span class="fa fa-pencil"></span> Edit</a>';
+            if (Gate::allows('cms', Auth::user())) {
+                $widget->content .= '<a href="'.url(config('cms.backend-route-prefix', 'cms').'/widgets/'.$widget->id.'/edit').'" class="btn btn-sm ml-2 btn-outline-secondary"><span class="fa fa-edit"></span> Edit</a>';
             }
 
-            if (config('app.locale') !== config('quarx.default-language') && $widget->translation(config('app.locale'))) {
+            if (config('app.locale') !== config('cms.default-language') && $widget->translation(config('app.locale'))) {
                 return $widget->translationData(config('app.locale'))->content;
             } else {
                 return $widget->content;
@@ -60,7 +60,7 @@ trait DefaultModuleServiceTrait
     {
         $img = '';
 
-        if ($image = app('Yab\Quarx\Models\Image')->find($id)) {
+        if ($image = app('Grafite\Cms\Models\Image')->find($id)) {
             $img = $image->url;
         }
 
@@ -78,7 +78,7 @@ trait DefaultModuleServiceTrait
     {
         $img = '';
 
-        if ($image = app('Yab\Quarx\Models\Image')->find($id)) {
+        if ($image = app('Grafite\Cms\Models\Image')->find($id)) {
             $img = $image->url;
         }
 

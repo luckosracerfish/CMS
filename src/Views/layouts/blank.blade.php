@@ -1,20 +1,13 @@
-@extends('quarx::layouts.navigation')
+@extends('cms::layouts.dashboard')
 
-@section('page-content')
+@section('pageTitle') Dashboard @stop
 
-    <div class="overlay"></div>
+@section('content')
 
-    <link rel="stylesheet" type="text/css" href="{{ Quarx::asset('css/dashboard.css', 'text/css') }}">
-
-    <div class="row raw-margin-top-50">
+    <div class="row">
         <div class="col-md-12">
-            @yield('content')
+            <p>Nothing to see here...</p>
         </div>
     </div>
 
-    <div class="raw100 raw-left navbar navbar-fixed-bottom">
-        <div class="raw100 raw-left quarx-footer">
-            <p class="raw-margin-left-20">Brought to you by: <a href="https://yabhq.com">Yab Inc.</a></p>
-        </div>
-    </div>
 @stop

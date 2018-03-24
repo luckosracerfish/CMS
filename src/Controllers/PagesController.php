@@ -1,26 +1,21 @@
 <?php
 
-namespace Yab\Quarx\Controllers;
+namespace Grafite\Cms\Controllers;
 
-use URL;
-use Quarx;
-use Response;
-use Yab\Quarx\Models\Page;
+use Cms;
+use Grafite\Cms\Models\Page;
 use Illuminate\Http\Request;
-use Yab\Quarx\Requests\PagesRequest;
-use Yab\Quarx\Services\ValidationService;
-use Yab\Quarx\Repositories\PageRepository;
+use Grafite\Cms\Requests\PagesRequest;
+use Grafite\Cms\Services\ValidationService;
+use Grafite\Cms\Repositories\PageRepository;
 
-class PagesController extends QuarxController
+class PagesController extends GrafiteCmsController
 {
-    /** @var PageRepository */
-    private $pagesRepository;
-
-    public function __construct(PageRepository $pagesRepo)
+    public function __construct(PageRepository $repository)
     {
         parent::construct();
 
-        $this->pagesRepository = $pagesRepo;
+        $this->repository = $repository;
     }
 
     /**
@@ -30,9 +25,9 @@ class PagesController extends QuarxController
      */
     public function index()
     {
-        $result = $this->pagesRepository->paginated();
+        $result = $this->repository->paginated();
 
-        return view('quarx::modules.pages.index')
+        return view('cms::modules.pages.index')
             ->with('pages', $result)
             ->with('pagination', $result->render());
     }
@@ -48,9 +43,9 @@ class PagesController extends QuarxController
     {
         $input = $request->all();
 
-        $result = $this->pagesRepository->search($input);
+        $result = $this->repository->search($input);
 
-        return view('quarx::modules.pages.index')
+        return view('cms::modules.pages.index')
             ->with('pages', $result[0]->get())
             ->with('pagination', $result[2])
             ->with('term', $result[1]);
@@ -63,7 +58,7 @@ class PagesController extends QuarxController
      */
     public function create()
     {
-        return view('quarx::modules.pages.create');
+        return view('cms::modules.pages.create');
     }
 
     /**
@@ -75,20 +70,20 @@ class PagesController extends QuarxController
      */
     public function store(Request $request)
     {
-        $validation = ValidationService::check(Page::$rules);
+        $validation = app(ValidationService::class)->check(Page::$rules);
 
         if (!$validation['errors']) {
-            $pages = $this->pagesRepository->store($request->all());
-            Quarx::notification('Page saved successfully.', 'success');
+            $pages = $this->repository->store($request->all());
+            Cms::notification('Page saved successfully.', 'success');
         } else {
             return $validation['redirect'];
         }
 
         if (!$pages) {
-            Quarx::notification('Page could not be saved.', 'warning');
+            Cms::notification('Page could not be saved.', 'warning');
         }
 
-        return redirect(route($this->quarxRouteBase.'.pages.edit', [$pages->id]));
+        return redirect(route($this->routeBase.'.pages.edit', [$pages->id]));
     }
 
     /**
@@ -100,15 +95,15 @@ class PagesController extends QuarxController
      */
     public function edit($id)
     {
-        $page = $this->pagesRepository->findPagesById($id);
+        $page = $this->repository->find($id);
 
         if (empty($page)) {
-            Quarx::notification('Page not found', 'warning');
+            Cms::notification('Page not found', 'warning');
 
-            return redirect(route($this->quarxRouteBase.'.pages.index'));
+            return redirect(route($this->routeBase.'.pages.index'));
         }
 
-        return view('quarx::modules.pages.edit')->with('page', $page);
+        return view('cms::modules.pages.edit')->with('page', $page);
     }
 
     /**
@@ -121,22 +116,22 @@ class PagesController extends QuarxController
      */
     public function update($id, PagesRequest $request)
     {
-        $pages = $this->pagesRepository->findPagesById($id);
+        $pages = $this->repository->find($id);
 
         if (empty($pages)) {
-            Quarx::notification('Page not found', 'warning');
+            Cms::notification('Page not found', 'warning');
 
-            return redirect(route($this->quarxRouteBase.'.pages.index'));
+            return redirect(route($this->routeBase.'.pages.index'));
         }
 
-        $pages = $this->pagesRepository->update($pages, $request->all());
-        Quarx::notification('Page updated successfully.', 'success');
+        $pages = $this->repository->update($pages, $request->all());
+        Cms::notification('Page updated successfully.', 'success');
 
         if (!$pages) {
-            Quarx::notification('Page could not be saved.', 'warning');
+            Cms::notification('Page could not be saved.', 'warning');
         }
 
-        return redirect(URL::previous());
+        return redirect(url()->previous());
     }
 
     /**
@@ -148,19 +143,19 @@ class PagesController extends QuarxController
      */
     public function destroy($id)
     {
-        $pages = $this->pagesRepository->findPagesById($id);
+        $pages = $this->repository->find($id);
 
         if (empty($pages)) {
-            Quarx::notification('Page not found', 'warning');
+            Cms::notification('Page not found', 'warning');
 
-            return redirect(route($this->quarxRouteBase.'.pages.index'));
+            return redirect(route($this->routeBase.'.pages.index'));
         }
 
         $pages->delete();
 
-        Quarx::notification('Page deleted successfully.', 'success');
+        Cms::notification('Page deleted successfully.', 'success');
 
-        return redirect(route($this->quarxRouteBase.'.pages.index'));
+        return redirect(route($this->routeBase.'.pages.index'));
     }
 
     /**
@@ -172,9 +167,9 @@ class PagesController extends QuarxController
      */
     public function history($id)
     {
-        $page = $this->pagesRepository->findPagesById($id);
+        $page = $this->repository->find($id);
 
-        return view('quarx::modules.pages.history')
+        return view('cms::modules.pages.history')
             ->with('page', $page);
     }
 }

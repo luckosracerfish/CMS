@@ -1,25 +1,21 @@
 <?php
 
-namespace Yab\Quarx\Controllers;
+namespace Grafite\Cms\Controllers;
 
-use URL;
-use Quarx;
-use Yab\Quarx\Models\Blog;
+use Cms;
+use Grafite\Cms\Models\Blog;
 use Illuminate\Http\Request;
-use Yab\Quarx\Requests\BlogRequest;
-use Yab\Quarx\Services\ValidationService;
-use Yab\Quarx\Repositories\BlogRepository;
+use Grafite\Cms\Requests\BlogRequest;
+use Grafite\Cms\Services\ValidationService;
+use Grafite\Cms\Repositories\BlogRepository;
 
-class BlogController extends QuarxController
+class BlogController extends GrafiteCmsController
 {
-    /** @var BlogRepository */
-    protected $blogRepository;
-
-    public function __construct(BlogRepository $blogRepo)
+    public function __construct(BlogRepository $repository)
     {
         parent::construct();
 
-        $this->blogRepository = $blogRepo;
+        $this->repository = $repository;
     }
 
     /**
@@ -29,9 +25,9 @@ class BlogController extends QuarxController
      */
     public function index()
     {
-        $blogs = $this->blogRepository->paginated();
+        $blogs = $this->repository->paginated();
 
-        return view('quarx::modules.blogs.index')
+        return view('cms::modules.blogs.index')
             ->with('blogs', $blogs)
             ->with('pagination', $blogs->render());
     }
@@ -47,9 +43,9 @@ class BlogController extends QuarxController
     {
         $input = $request->all();
 
-        $result = $this->blogRepository->search($input);
+        $result = $this->repository->search($input);
 
-        return view('quarx::modules.blogs.index')
+        return view('cms::modules.blogs.index')
             ->with('blogs', $result[0]->get())
             ->with('pagination', $result[2])
             ->with('term', $result[1]);
@@ -62,7 +58,7 @@ class BlogController extends QuarxController
      */
     public function create()
     {
-        return view('quarx::modules.blogs.create');
+        return view('cms::modules.blogs.create');
     }
 
     /**
@@ -74,20 +70,20 @@ class BlogController extends QuarxController
      */
     public function store(Request $request)
     {
-        $validation = ValidationService::check(Blog::$rules);
+        $validation = app(ValidationService::class)->check(Blog::$rules);
 
         if (!$validation['errors']) {
-            $blog = $this->blogRepository->store($request->all());
-            Quarx::notification('Blog saved successfully.', 'success');
+            $blog = $this->repository->store($request->all());
+            Cms::notification('Blog saved successfully.', 'success');
         } else {
             return $validation['redirect'];
         }
 
         if (!$blog) {
-            Quarx::notification('Blog could not be saved.', 'warning');
+            Cms::notification('Blog could not be saved.', 'warning');
         }
 
-        return redirect(route($this->quarxRouteBase.'.blog.edit', [$blog->id]));
+        return redirect(route($this->routeBase.'.blog.edit', [$blog->id]));
     }
 
     /**
@@ -99,15 +95,15 @@ class BlogController extends QuarxController
      */
     public function edit($id)
     {
-        $blog = $this->blogRepository->findBlogById($id);
+        $blog = $this->repository->find($id);
 
         if (empty($blog)) {
-            Quarx::notification('Blog not found', 'warning');
+            Cms::notification('Blog not found', 'warning');
 
-            return redirect(route($this->quarxRouteBase.'.blog.index'));
+            return redirect(route($this->routeBase.'.blog.index'));
         }
 
-        return view('quarx::modules.blogs.edit')->with('blog', $blog);
+        return view('cms::modules.blogs.edit')->with('blog', $blog);
     }
 
     /**
@@ -120,29 +116,29 @@ class BlogController extends QuarxController
      */
     public function update($id, BlogRequest $request)
     {
-        $blog = $this->blogRepository->findBlogById($id);
+        $blog = $this->repository->find($id);
 
         if (empty($blog)) {
-            Quarx::notification('Blog not found', 'warning');
+            Cms::notification('Blog not found', 'warning');
 
-            return redirect(route($this->quarxRouteBase.'.blog.index'));
+            return redirect(route($this->routeBase.'.blog.index'));
         }
 
-        $validation = ValidationService::check(Blog::$rules);
+        $validation = app(ValidationService::class)->check(Blog::$rules);
 
         if (!$validation['errors']) {
-            $blog = $this->blogRepository->update($blog, $request->all());
+            $blog = $this->repository->update($blog, $request->all());
 
-            Quarx::notification('Blog updated successfully.', 'success');
+            Cms::notification('Blog updated successfully.', 'success');
 
             if (! $blog) {
-                Quarx::notification('Blog could not be saved.', 'warning');
+                Cms::notification('Blog could not be saved.', 'warning');
             }
         } else {
             return $validation['redirect'];
         }
 
-        return redirect(URL::previous());
+        return back();
     }
 
     /**
@@ -154,19 +150,19 @@ class BlogController extends QuarxController
      */
     public function destroy($id)
     {
-        $blog = $this->blogRepository->findBlogById($id);
+        $blog = $this->repository->find($id);
 
         if (empty($blog)) {
-            Quarx::notification('Blog not found', 'warning');
+            Cms::notification('Blog not found', 'warning');
 
-            return redirect(route($this->quarxRouteBase.'.blog.index'));
+            return redirect(route($this->routeBase.'.blog.index'));
         }
 
         $blog->delete();
 
-        Quarx::notification('Blog deleted successfully.', 'success');
+        Cms::notification('Blog deleted successfully.', 'success');
 
-        return redirect(route($this->quarxRouteBase.'.blog.index'));
+        return redirect(route($this->routeBase.'.blog.index'));
     }
 
     /**
@@ -178,9 +174,9 @@ class BlogController extends QuarxController
      */
     public function history($id)
     {
-        $blog = $this->blogRepository->findBlogById($id);
+        $blog = $this->repository->find($id);
 
-        return view('quarx::modules.blogs.history')
+        return view('cms::modules.blogs.history')
             ->with('blog', $blog);
     }
 }

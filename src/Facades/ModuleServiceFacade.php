@@ -1,6 +1,6 @@
 <?php
 
-namespace Yab\Quarx\Facades;
+namespace Grafite\Cms\Facades;
 
 use Illuminate\Support\Facades\Facade;
 

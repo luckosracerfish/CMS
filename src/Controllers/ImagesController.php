@@ -1,29 +1,26 @@
 <?php
 
-namespace Yab\Quarx\Controllers;
+namespace Grafite\Cms\Controllers;
 
 use Config;
 use CryptoService;
 use FileService;
 use Illuminate\Http\Request;
-use Quarx;
+use Cms;
 use Storage;
-use Yab\Quarx\Models\Image;
-use Yab\Quarx\Repositories\ImageRepository;
-use Yab\Quarx\Requests\ImagesRequest;
-use Yab\Quarx\Services\QuarxResponseService;
-use Yab\Quarx\Services\ValidationService;
+use Grafite\Cms\Models\Image;
+use Grafite\Cms\Repositories\ImageRepository;
+use Grafite\Cms\Requests\ImagesRequest;
+use Grafite\Cms\Services\CmsResponseService;
+use Grafite\Cms\Services\ValidationService;
 
-class ImagesController extends QuarxController
+class ImagesController extends GrafiteCmsController
 {
-    /** @var ImageRepository */
-    private $imagesRepository;
-
-    public function __construct(ImageRepository $imagesRepo)
+    public function __construct(ImageRepository $repository)
     {
         parent::construct();
 
-        $this->imagesRepository = $imagesRepo;
+        $this->repository = $repository;
     }
 
     /**
@@ -37,9 +34,9 @@ class ImagesController extends QuarxController
     {
         $input = $request->all();
 
-        $result = $this->imagesRepository->paginated();
+        $result = $this->repository->paginated();
 
-        return view('quarx::modules.images.index')
+        return view('cms::modules.images.index')
             ->with('images', $result)
             ->with('pagination', $result->render());
     }
@@ -55,9 +52,9 @@ class ImagesController extends QuarxController
     {
         $input = $request->all();
 
-        $result = $this->imagesRepository->search($input);
+        $result = $this->repository->search($input);
 
-        return view('quarx::modules.images.index')
+        return view('cms::modules.images.index')
             ->with('images', $result[0]->get())
             ->with('pagination', $result[2])
             ->with('term', $result[1]);
@@ -70,7 +67,7 @@ class ImagesController extends QuarxController
      */
     public function create()
     {
-        return view('quarx::modules.images.create');
+        return view('cms::modules.images.create');
     }
 
     /**
@@ -83,31 +80,31 @@ class ImagesController extends QuarxController
     public function store(Request $request)
     {
         try {
-            $validation = ValidationService::check(['location' => 'required']);
+            $validation = app(ValidationService::class)->check(['location' => 'required']);
             if (!$validation['errors']) {
                 foreach ($request->input('location') as $image) {
-                    $imageSaved = $this->imagesRepository->store([
+                    $imageSaved = $this->repository->store([
                         'location' => $image,
                         'is_published' => $request->input('is_published'),
                         'tags' => $request->input('tags'),
                     ]);
                 }
 
-                Quarx::notification('Image saved successfully.', 'success');
+                Cms::notification('Image saved successfully.', 'success');
 
                 if (!$imageSaved) {
-                    Quarx::notification('Image was not saved.', 'danger');
+                    Cms::notification('Image was not saved.', 'danger');
                 }
             } else {
-                Quarx::notification('Image could not be saved', 'danger');
+                Cms::notification('Image could not be saved', 'danger');
 
                 return $validation['redirect'];
             }
         } catch (Exception $e) {
-            Quarx::notification($e->getMessage() ?: 'Image could not be saved.', 'danger');
+            Cms::notification($e->getMessage() ?: 'Image could not be saved.', 'danger');
         }
 
-        return redirect(route($this->quarxRouteBase.'.images.index'));
+        return redirect(route($this->routeBase.'.images.index'));
     }
 
     /**
@@ -119,19 +116,19 @@ class ImagesController extends QuarxController
      */
     public function upload(Request $request)
     {
-        $validation = ValidationService::check([
+        $validation = app(ValidationService::class)->check([
             'location' => ['required'],
         ]);
 
         if (!$validation['errors']) {
             $file = $request->file('location');
-            $fileSaved = FileService::saveFile($file, 'public/images', [], true);
+            $fileSaved = app(FileService::class)->saveFile($file, 'public/images', [], true);
             $fileSaved['name'] = CryptoService::encrypt($fileSaved['name']);
             $fileSaved['mime'] = $file->getClientMimeType();
             $fileSaved['size'] = $file->getClientSize();
-            $response = QuarxResponseService::apiResponse('success', $fileSaved);
+            $response = app(CmsResponseService::class)->apiResponse('success', $fileSaved);
         } else {
-            $response = QuarxResponseService::apiErrorResponse($validation['errors'], $validation['inputs']);
+            $response = app(CmsResponseService::class)->apiErrorResponse($validation['errors'], $validation['inputs']);
         }
 
         return $response;
@@ -146,15 +143,15 @@ class ImagesController extends QuarxController
      */
     public function edit($id)
     {
-        $images = $this->imagesRepository->findImagesById($id);
+        $images = $this->repository->find($id);
 
         if (empty($images)) {
-            Quarx::notification('Image not found', 'warning');
+            Cms::notification('Image not found', 'warning');
 
-            return redirect(route($this->quarxRouteBase.'.images.index'));
+            return redirect(route($this->routeBase.'.images.index'));
         }
 
-        return view('quarx::modules.images.edit')->with('images', $images);
+        return view('cms::modules.images.edit')->with('images', $images);
     }
 
     /**
@@ -168,26 +165,26 @@ class ImagesController extends QuarxController
     public function update($id, ImagesRequest $request)
     {
         try {
-            $images = $this->imagesRepository->findImagesById($id);
+            $images = $this->repository->find($id);
 
-            Quarx::notification('Image updated successfully.', 'success');
+            Cms::notification('Image updated successfully.', 'success');
 
             if (empty($images)) {
-                Quarx::notification('Image not found', 'warning');
+                Cms::notification('Image not found', 'warning');
 
-                return redirect(route($this->quarxRouteBase.'.images.index'));
+                return redirect(route($this->routeBase.'.images.index'));
             }
 
-            $images = $this->imagesRepository->update($images, $request->all());
+            $images = $this->repository->update($images, $request->all());
 
             if (!$images) {
-                Quarx::notification('Image could not be updated', 'danger');
+                Cms::notification('Image could not be updated', 'danger');
             }
         } catch (Exception $e) {
-            Quarx::notification($e->getMessage() ?: 'Image could not be saved.', 'danger');
+            Cms::notification($e->getMessage() ?: 'Image could not be saved.', 'danger');
         }
 
-        return redirect(route($this->quarxRouteBase.'.images.edit', $id));
+        return redirect(route($this->routeBase.'.images.edit', $id));
     }
 
     /**
@@ -199,26 +196,26 @@ class ImagesController extends QuarxController
      */
     public function destroy($id)
     {
-        $image = $this->imagesRepository->findImagesById($id);
+        $image = $this->repository->find($id);
 
         if (is_file(storage_path($image->location))) {
             Storage::delete($image->location);
         } else {
-            Storage::disk(Config::get('quarx.storage-location', 'local'))->delete($image->location);
+            Storage::disk(Config::get('cms.storage-location', 'local'))->delete($image->location);
         }
 
         if (empty($image)) {
-            Quarx::notification('Image not found', 'warning');
+            Cms::notification('Image not found', 'warning');
 
-            return redirect(route($this->quarxRouteBase.'.images.index'));
+            return redirect(route($this->routeBase.'.images.index'));
         }
 
         $image->forgetCache();
         $image->delete();
 
-        Quarx::notification('Image deleted successfully.', 'success');
+        Cms::notification('Image deleted successfully.', 'success');
 
-        return redirect(route($this->quarxRouteBase.'.images.index'));
+        return redirect(route($this->routeBase.'.images.index'));
     }
 
     /**
@@ -233,20 +230,20 @@ class ImagesController extends QuarxController
         $ids = explode('-', $ids);
 
         foreach ($ids as $id) {
-            $image = $this->imagesRepository->findImagesById($id);
+            $image = $this->repository->find($id);
 
             if (is_file(storage_path($image->location))) {
                 Storage::delete($image->location);
             } else {
-                Storage::disk(Config::get('quarx.storage-location', 'local'))->delete($image->location);
+                Storage::disk(Config::get('cms.storage-location', 'local'))->delete($image->location);
             }
 
             $image->delete();
         }
 
-        Quarx::notification('Bulk Image deletes completed successfully.', 'success');
+        Cms::notification('Bulk Image deletes completed successfully.', 'success');
 
-        return redirect(route($this->quarxRouteBase.'.images.index'));
+        return redirect(route($this->routeBase.'.images.index'));
     }
 
     /*
@@ -262,13 +259,13 @@ class ImagesController extends QuarxController
      */
     public function apiList(Request $request)
     {
-        if (config('quarx.api-key') != $request->header('quarx')) {
-            return QuarxResponseService::apiResponse('error', []);
+        if (config('cms.api-key') != $request->header('cms')) {
+            return app(CmsResponseService::class)->apiResponse('error', []);
         }
 
-        $images =  $this->imagesRepository->apiPrepared();
+        $images =  $this->repository->apiPrepared();
 
-        return QuarxResponseService::apiResponse('success', $images);
+        return app(CmsResponseService::class)->apiResponse('success', $images);
     }
 
     /**
@@ -280,8 +277,8 @@ class ImagesController extends QuarxController
      */
     public function apiStore(Request $request)
     {
-        $image = $this->imagesRepository->apiStore($request->all());
+        $image = $this->repository->apiStore($request->all());
 
-        return QuarxResponseService::apiResponse('success', $image);
+        return app(CmsResponseService::class)->apiResponse('success', $image);
     }
 }

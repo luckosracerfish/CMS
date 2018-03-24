@@ -1,20 +1,19 @@
 <?php
 
-namespace App\Http\Controllers\Quarx;
+namespace App\Http\Controllers\Cms;
 
 use App\Http\Controllers\Controller;
-use Yab\Quarx\Repositories\BlogRepository;
+use Grafite\Cms\Repositories\BlogRepository;
 
 class BlogController extends Controller
 {
-    /** @var BlogRepository */
-    private $blogRepository;
+    protected $repository;
 
-    public function __construct(BlogRepository $blogRepo)
+    public function __construct(BlogRepository $repository)
     {
-        $this->blogRepository = $blogRepo;
+        $this->repository = $repository;
 
-        if (!in_array('blog', config('quarx.active-core-modules'))) {
+        if (!in_array('blog', config('cms.active-core-modules'))) {
             return redirect('/')->send();
         }
     }
@@ -28,14 +27,14 @@ class BlogController extends Controller
      */
     public function all()
     {
-        $blogs = $this->blogRepository->publishedAndPaginated();
-        $tags = $this->blogRepository->allTags();
+        $blogs = $this->repository->published();
+        $tags = $this->repository->allTags();
 
         if (empty($blogs)) {
             abort(404);
         }
 
-        return view('quarx-frontend::blog.all')
+        return view('cms-frontend::blog.all')
             ->with('tags', $tags)
             ->with('blogs', $blogs);
     }
@@ -49,14 +48,14 @@ class BlogController extends Controller
      */
     public function tag($tag)
     {
-        $blogs = $this->blogRepository->tags($tag);
-        $tags = $this->blogRepository->allTags();
+        $blogs = $this->repository->tags($tag);
+        $tags = $this->repository->allTags();
 
         if (empty($blogs)) {
             abort(404);
         }
 
-        return view('quarx-frontend::blog.all')
+        return view('cms-frontend::blog.all')
             ->with('tags', $tags)
             ->with('blogs', $blogs);
     }
@@ -70,12 +69,12 @@ class BlogController extends Controller
      */
     public function show($url)
     {
-        $blog = $this->blogRepository->findBlogsByURL($url);
+        $blog = $this->repository->getByUrl($url);
 
         if (empty($blog)) {
             abort(404);
         }
 
-        return view('quarx-frontend::blog.'.$blog->template)->with('blog', $blog);
+        return view('cms-frontend::blog.'.$blog->template)->with('blog', $blog);
     }
 }

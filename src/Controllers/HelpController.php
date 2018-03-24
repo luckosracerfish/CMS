@@ -1,11 +1,11 @@
 <?php
 
-namespace Yab\Quarx\Controllers;
+namespace Grafite\Cms\Controllers;
 
-class HelpController extends QuarxController
+class HelpController extends GrafiteCmsController
 {
     public function main()
     {
-        return view('quarx::help');
+        return view('cms::help');
     }
 }

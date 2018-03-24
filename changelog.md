@@ -3,6 +3,19 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 ----
 
+## [v3.0.1] - 2018-03-23
+
+### Fixed
+- Minor style fixes
+
+## [v3.0.0] - 2018-03-23
+
+### Changed
+- Bootstrap upgrade
+- Overhaul of codebase
+- General Improvements
+- Laravel 5.6 compatibility upgrade
+
 ## [v2.4.6] - 2018-02-21
 
 ### Fixed
@@ -106,7 +119,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [v2.3.23] - 2017-06-03
 
 ### Added
-- Backend route prefix default: quarx
+- Backend route prefix default: cabin
 
 ### Changed
 - Refactored asset caching and local detection
@@ -301,7 +314,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [v2.2.6] - 2016-12-05
 
 ### Added
-- New db-prefix option for quarx tables
+- New db-prefix option for cabin tables
 - New live preview in editor view
 
 ### Fixed

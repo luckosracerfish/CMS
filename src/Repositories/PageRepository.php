@@ -1,63 +1,27 @@
 <?php
 
-namespace Yab\Quarx\Repositories;
+namespace Grafite\Cms\Repositories;
 
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Schema;
-use Quarx;
-use Yab\Quarx\Models\Page;
-use Yab\Quarx\Services\FileService;
+use Cms;
+use Grafite\Cms\Models\Page;
+use Grafite\Cms\Repositories\CmsRepository;
+use Grafite\Cms\Repositories\TranslationRepository;
+use Grafite\Cms\Services\FileService;
 
-class PageRepository
+class PageRepository extends CmsRepository
 {
-    protected $translationRepo;
+    public $model;
 
-    public function __construct()
+    public $translationRepo;
+
+    public $table;
+
+    public function __construct(Page $model, TranslationRepository $translationRepo)
     {
-        $this->translationRepo = app(TranslationRepository::class);
-    }
-
-    /**
-     * Returns all Pages.
-     *
-     * @return \Illuminate\Database\Eloquent\Collection|static[]
-     */
-    public function all()
-    {
-        return Page::all();
-    }
-
-    public function paginated()
-    {
-        $model = app(Page::class);
-
-        if (isset(request()->dir) && isset(request()->field)) {
-            $model = $model->orderBy(request()->field, request()->dir);
-        } else {
-            $model = $model->orderBy('created_at', 'desc');
-        }
-
-        return $model->paginate(Config::get('quarx.pagination', 24));
-    }
-
-    public function published()
-    {
-        return Page::where('is_published', 1)->where('published_at', '<=', Carbon::now(config('app.timezone'))->format('Y-m-d H:i:s'))->orderBy('created_at', 'desc')->paginate(Config::get('quarx.pagination', 24));
-    }
-
-    public function search($input)
-    {
-        $query = Page::orderBy('created_at', 'desc');
-        $query->where('id', 'LIKE', '%'.$input['term'].'%');
-
-        $columns = Schema::getColumnListing('pages');
-
-        foreach ($columns as $attribute) {
-            $query->orWhere($attribute, 'LIKE', '%'.$input['term'].'%');
-        }
-
-        return [$query, $input['term'], $query->paginate(Config::get('quarx.pagination', 24))->render()];
+        $this->model = $model;
+        $this->translationRepo = $translationRepo;
+        $this->table = 'pages';
     }
 
     /**
@@ -85,29 +49,17 @@ class PageRepository
             $payload['blocks'] = json_encode($blockCollection);
         }
 
-        $payload['url'] = Quarx::convertToURL($payload['url']);
+        $payload['url'] = Cms::convertToURL($payload['url']);
         $payload['is_published'] = (isset($payload['is_published'])) ? (bool) $payload['is_published'] : 0;
         $payload['published_at'] = (isset($payload['published_at']) && !empty($payload['published_at'])) ? Carbon::parse($payload['published_at'])->format('Y-m-d H:i:s') : Carbon::now(config('app.timezone'))->format('Y-m-d H:i:s');
 
         if (isset($payload['hero_image'])) {
             $file = request()->file('hero_image');
-            $path = FileService::saveFile($file, 'public/images', [], true);
+            $path = app(FileService::class)->saveFile($file, 'public/images', [], true);
             $payload['hero_image'] = $path['name'];
         }
 
-        return Page::create($payload);
-    }
-
-    /**
-     * Find Pages by given id.
-     *
-     * @param int $id
-     *
-     * @return \Illuminate\Support\Collection|null|static|Pages
-     */
-    public function findPagesById($id)
-    {
-        return Page::find($id);
+        return $this->model->create($payload);
     }
 
     /**
@@ -121,18 +73,18 @@ class PageRepository
     {
         $page = null;
 
-        $page = Page::where('url', $url)->where('is_published', 1)->where('published_at', '<=', Carbon::now(config('app.timezone'))->format('Y-m-d H:i:s'))->first();
+        $page = $this->model->where('url', $url)->where('is_published', 1)->where('published_at', '<=', Carbon::now(config('app.timezone'))->format('Y-m-d H:i:s'))->first();
 
-        if ($page && app()->getLocale() !== config('quarx.default-language')) {
-            $page = $this->translationRepo->findByEntityId($page->id, 'Yab\Quarx\Models\Page');
+        if ($page && app()->getLocale() !== config('cms.default-language')) {
+            $page = $this->translationRepo->findByEntityId($page->id, 'Grafite\Cms\Models\Page');
         }
 
         if (!$page) {
-            $page = $this->translationRepo->findByUrl($url, 'Yab\Quarx\Models\Page');
+            $page = $this->translationRepo->findByUrl($url, 'Grafite\Cms\Models\Page');
         }
 
-        if ($url === 'home' && app()->getLocale() !== config('quarx.default-language')) {
-            $page = $this->translationRepo->findByUrl($url, 'Yab\Quarx\Models\Page');
+        if ($url === 'home' && app()->getLocale() !== config('cms.default-language')) {
+            $page = $this->translationRepo->findByUrl($url, 'Grafite\Cms\Models\Page');
         }
 
         return $page;
@@ -164,14 +116,14 @@ class PageRepository
 
         if (isset($payload['hero_image'])) {
             $file = request()->file('hero_image');
-            $path = FileService::saveFile($file, 'public/images', [], true);
+            $path = app(FileService::class)->saveFile($file, 'public/images', [], true);
             $payload['hero_image'] = $path['name'];
         }
 
-        if (!empty($payload['lang']) && $payload['lang'] !== config('quarx.default-language', 'en')) {
-            return $this->translationRepo->createOrUpdate($page->id, 'Yab\Quarx\Models\Page', $payload['lang'], $payload);
+        if (!empty($payload['lang']) && $payload['lang'] !== config('cms.default-language', 'en')) {
+            return $this->translationRepo->createOrUpdate($page->id, 'Grafite\Cms\Models\Page', $payload['lang'], $payload);
         } else {
-            $payload['url'] = Quarx::convertToURL($payload['url']);
+            $payload['url'] = Cms::convertToURL($payload['url']);
             $payload['is_published'] = (isset($payload['is_published'])) ? (bool) $payload['is_published'] : 0;
             $payload['published_at'] = (isset($payload['published_at']) && !empty($payload['published_at'])) ? Carbon::parse($payload['published_at'])->format('Y-m-d H:i:s') : Carbon::now(config('app.timezone'))->format('Y-m-d H:i:s');
 
@@ -192,7 +144,7 @@ class PageRepository
     public function parseTemplate($payload, $currentBlocks)
     {
         if (isset($payload['template'])) {
-            $content = file_get_contents(base_path('resources/themes/'.config('quarx.frontend-theme').'/pages/'.$payload['template'].'.blade.php'));
+            $content = file_get_contents(base_path('resources/themes/'.config('cms.frontend-theme').'/pages/'.$payload['template'].'.blade.php'));
 
             preg_match_all('/->block\((.*)\)/', $content, $pageMethodMatches);
             preg_match_all('/\@block\((.*)\)/', $content, $bladeMatches);

@@ -1,8 +1,10 @@
 <?php
 
-namespace Yab\Quarx\Models;
+namespace Grafite\Cms\Models;
 
-class Translation extends QuarxModel
+use Grafite\Cms\Models\CmsModel;
+
+class Translation extends CmsModel
 {
     public $table = 'translations';
 

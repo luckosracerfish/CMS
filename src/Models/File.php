@@ -1,8 +1,10 @@
 <?php
 
-namespace Yab\Quarx\Models;
+namespace Grafite\Cms\Models;
 
-class File extends QuarxModel
+use Grafite\Cms\Models\CmsModel;
+
+class File extends CmsModel
 {
     public $table = 'files';
 

@@ -1,32 +1,35 @@
 <?php
 
-namespace Yab\Quarx\Controllers;
+namespace Grafite\Cms\Controllers;
 
-use Quarx;
+use Cms;
 use Config;
 use Storage;
 use Redirect;
 use Response;
 use Exception;
 use CryptoService;
-use Yab\Quarx\Models\File;
+use Grafite\Cms\Models\File;
 use Illuminate\Http\Request;
-use Yab\Quarx\Requests\FileRequest;
-use Yab\Quarx\Services\FileService;
-use Yab\Quarx\Services\ValidationService;
-use Yab\Quarx\Repositories\FileRepository;
-use Yab\Quarx\Services\QuarxResponseService;
+use Grafite\Cms\Requests\FileRequest;
+use Grafite\Cms\Services\FileService;
+use Grafite\Cms\Services\ValidationService;
+use Grafite\Cms\Repositories\FileRepository;
+use Grafite\Cms\Services\CmsResponseService;
 
-class FilesController extends QuarxController
+class FilesController extends GrafiteCmsController
 {
-    /** @var FilesRepository */
-    private $fileRepository;
-
-    public function __construct(FileRepository $fileRepo)
-    {
+    public function __construct(
+        FileRepository $repository,
+        FileService $fileService,
+        ValidationService $validationService,
+        CmsResponseService $cmsResponseService
+    ) {
         parent::construct();
-
-        $this->fileRepository = $fileRepo;
+        $this->repository = $repository;
+        $this->fileService = $fileService;
+        $this->validation = $validationService;
+        $this->responseService = $cmsResponseService;
     }
 
     /**
@@ -38,9 +41,9 @@ class FilesController extends QuarxController
      */
     public function index()
     {
-        $result = $this->fileRepository->paginated();
+        $result = $this->repository->paginated();
 
-        return view('quarx::modules.files.index')
+        return view('cms::modules.files.index')
             ->with('files', $result)
             ->with('pagination', $result->render());
     }
@@ -56,9 +59,9 @@ class FilesController extends QuarxController
     {
         $input = $request->all();
 
-        $result = $this->fileRepository->search($input);
+        $result = $this->repository->search($input);
 
-        return view('quarx::modules.files.index')
+        return view('cms::modules.files.index')
             ->with('files', $result[0]->get())
             ->with('pagination', $result[2])
             ->with('term', $result[1]);
@@ -71,7 +74,7 @@ class FilesController extends QuarxController
      */
     public function create()
     {
-        return view('quarx::modules.files.create');
+        return view('cms::modules.files.create');
     }
 
     /**
@@ -83,17 +86,17 @@ class FilesController extends QuarxController
      */
     public function store(Request $request)
     {
-        $validation = ValidationService::check(File::$rules);
+        $validation = $this->validation->check(File::$rules);
 
         if (!$validation['errors']) {
-            $file = $this->fileRepository->store($request->all());
+            $file = $this->repository->store($request->all());
         } else {
             return $validation['redirect'];
         }
 
-        Quarx::notification('File saved successfully.', 'success');
+        Cms::notification('File saved successfully.', 'success');
 
-        return redirect(route($this->quarxRouteBase.'.files.index'));
+        return redirect(route($this->routeBase.'.files.index'));
     }
 
     /**
@@ -105,19 +108,19 @@ class FilesController extends QuarxController
      */
     public function upload(Request $request)
     {
-        $validation = ValidationService::check([
+        $validation = $this->validation->check([
             'location' => [],
         ]);
 
         if (!$validation['errors']) {
             $file = $request->file('location');
-            $fileSaved = FileService::saveFile($file, 'files/');
+            $fileSaved = $this->fileService->saveFile($file, 'files/');
             $fileSaved['name'] = CryptoService::encrypt($fileSaved['name']);
             $fileSaved['mime'] = $file->getClientMimeType();
             $fileSaved['size'] = $file->getClientSize();
-            $response = QuarxResponseService::apiResponse('success', $fileSaved);
+            $response = $this->responseService->apiResponse('success', $fileSaved);
         } else {
-            $response = QuarxResponseService::apiErrorResponse($validation['errors'], $validation['inputs']);
+            $response = $this->responseService->apiErrorResponse($validation['errors'], $validation['inputs']);
         }
 
         return $response;
@@ -134,10 +137,9 @@ class FilesController extends QuarxController
     {
         try {
             Storage::delete($id);
-
-            $response = QuarxResponseService::apiResponse('success', 'success!');
+            $response = $this->responseService->apiResponse('success', 'success!');
         } catch (Exception $e) {
-            $response = QuarxResponseService::apiResponse('error', $e->getMessage());
+            $response = $this->responseService->apiResponse('error', $e->getMessage());
         }
 
         return $response;
@@ -152,15 +154,15 @@ class FilesController extends QuarxController
      */
     public function edit($id)
     {
-        $files = $this->fileRepository->findFilesById($id);
+        $files = $this->repository->find($id);
 
         if (empty($files)) {
-            Quarx::notification('File not found', 'warning');
+            Cms::notification('File not found', 'warning');
 
-            return redirect(route($this->quarxRouteBase.'.files.index'));
+            return redirect(route($this->routeBase.'.files.index'));
         }
 
-        return view('quarx::modules.files.edit')->with('files', $files);
+        return view('cms::modules.files.edit')->with('files', $files);
     }
 
     /**
@@ -173,17 +175,17 @@ class FilesController extends QuarxController
      */
     public function update($id, FileRequest $request)
     {
-        $files = $this->fileRepository->findFilesById($id);
+        $files = $this->repository->find($id);
 
         if (empty($files)) {
-            Quarx::notification('File not found', 'warning');
+            Cms::notification('File not found', 'warning');
 
-            return redirect(route($this->quarxRouteBase.'.files.index'));
+            return redirect(route($this->routeBase.'.files.index'));
         }
 
-        $files = $this->fileRepository->update($files, $request->all());
+        $files = $this->repository->update($files, $request->all());
 
-        Quarx::notification('File updated successfully.', 'success');
+        Cms::notification('File updated successfully.', 'success');
 
         return Redirect::back();
     }
@@ -197,25 +199,25 @@ class FilesController extends QuarxController
      */
     public function destroy($id)
     {
-        $files = $this->fileRepository->findFilesById($id);
+        $files = $this->repository->find($id);
 
         if (empty($files)) {
-            Quarx::notification('File not found', 'warning');
+            Cms::notification('File not found', 'warning');
 
-            return redirect(route($this->quarxRouteBase.'.files.index'));
+            return redirect(route($this->routeBase.'.files.index'));
         }
 
         if (is_file(storage_path($files->location))) {
             Storage::delete($files->location);
         } else {
-            Storage::disk(config('quarx.storage-location', 'local'))->delete($files->location);
+            Storage::disk(config('cms.storage-location', 'local'))->delete($files->location);
         }
 
         $files->delete();
 
-        Quarx::notification('File deleted successfully.', 'success');
+        Cms::notification('File deleted successfully.', 'success');
 
-        return redirect(route($this->quarxRouteBase.'.files.index'));
+        return redirect(route($this->routeBase.'.files.index'));
     }
 
     /**
@@ -225,12 +227,12 @@ class FilesController extends QuarxController
      */
     public function apiList(Request $request)
     {
-        if (config('quarx.api-key') != $request->header('quarx')) {
-            return QuarxResponseService::apiResponse('error', []);
+        if (config('cms.api-key') != $request->header('cms')) {
+            return $this->responseService->apiResponse('error', []);
         }
 
-        $files = $this->fileRepository->apiPrepared();
+        $files = $this->repository->apiPrepared();
 
-        return QuarxResponseService::apiResponse('success', $files);
+        return $this->responseService->apiResponse('success', $files);
     }
 }

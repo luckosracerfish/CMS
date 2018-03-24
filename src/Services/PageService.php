@@ -1,21 +1,27 @@
 <?php
 
-namespace Yab\Quarx\Services;
+namespace Grafite\Cms\Services;
 
+use Grafite\Cms\Repositories\PageRepository;
+use Grafite\Cms\Services\BaseService;
 use Illuminate\Support\Facades\Config;
-use Yab\Quarx\Repositories\PageRepository;
 
-class PageService
+class PageService extends BaseService
 {
     public function __construct()
     {
-        $this->pageRepo = new PageRepository();
+        $this->repo = app(PageRepository::class);
     }
 
+    /**
+     * Get pages as options
+     *
+     * @return array
+     */
     public function getPagesAsOptions()
     {
         $pages = [];
-        $publishedPages = $this->pageRepo->all();
+        $publishedPages = $this->repo->all();
 
         foreach ($publishedPages as $page) {
             $pages[$page->title] = $page->id;
@@ -24,27 +30,26 @@ class PageService
         return $pages;
     }
 
+    /**
+     * Get templates as options
+     *
+     * @return array
+     */
     public function getTemplatesAsOptions()
     {
-        $availableTemplates = ['show'];
-        $templates = glob(base_path('resources/themes/'.Config::get('quarx.frontend-theme').'/pages/*'));
-
-        foreach ($templates as $template) {
-            $template = str_replace(base_path('resources/themes/'.Config::get('quarx.frontend-theme').'/pages/'), '', $template);
-            if (stristr($template, 'template')) {
-                $template = str_replace('-template.blade.php', '', $template);
-                if (!stristr($template, '.php')) {
-                    $availableTemplates[] = $template.'-template';
-                }
-            }
-        }
-
-        return $availableTemplates;
+        return $this->getTemplatesAsOptionsArray('pages');
     }
 
+    /**
+     * Get a page name by ID
+     *
+     * @param  int $id
+     *
+     * @return string
+     */
     public function pageName($id)
     {
-        $page = $this->pageRepo->findPagesById($id);
+        $page = $this->repo->find($id);
 
         return $page->title;
     }

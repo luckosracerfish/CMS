@@ -1,21 +1,25 @@
-@extends('quarx::layouts.dashboard')
+@extends('cms::layouts.dashboard')
+
+@section('pageTitle') Event History @stop
 
 @section('content')
 
-    <div class="row">
-        <h1 class="page-header">Event History</h1>
+    <div class="col-md-12 mt-2">
+        @include('cms::modules.events.breadcrumbs', ['location' => [[
+            $event->title => cms()->url('events/'.$event->id.'/edit')], 'history'
+        ]])
     </div>
 
-    @include('quarx::modules.events.breadcrumbs', ['location' => [[$event->title => url(config('quarx.backend-route-prefix', 'quarx').'/events/'.$event->id.'/edit')], 'history']])
-
-    <div class="row">
+    <div class="col-md-12">
         <table class="table table-striped">
-        @foreach($event->history() as $history)
-            <tr>
-                <td>{{ $history->created_at->format('M jS, Y') }} ({{ $history->created_at->diffForHumans() }})</td>
-                <td class="text-right"><a class="btn btn-warning btn-link btn-xs" href="{{ url(config('quarx.backend-route-prefix', 'quarx').'/revert/'.$history->id) }}">Revert</a></td>
-            </tr>
-        @endforeach
+            @foreach($event->history() as $history)
+                <tr>
+                    <td>{{ $history->created_at->format('M jS, Y') }} ({{ $history->created_at->diffForHumans() }})</td>
+                    <td class="text-right">
+                        <a class="btn btn-warning btn-sm" href="{{ cms()->url('revert/'.$history->id) }}">Revert</a>
+                    </td>
+                </tr>
+            @endforeach
         </table>
     </div>
 

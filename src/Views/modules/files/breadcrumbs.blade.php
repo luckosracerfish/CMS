@@ -1,12 +1,9 @@
-<div class="row">
+<nav aria-label="breadcrumb">
     <ol class="breadcrumb">
-        <li><a href="{!! url(config('quarx.backend-route-prefix', 'quarx').'/files') !!}">Files</a></li>
-
+        <li class="breadcrumb-item"><a href="{!! cms()->url('files') !!}">Files</a></li>
         @foreach($location as $local)
-
-            <li>{!! ucfirst($local) !!}</li>
-
+            <li class="breadcrumb-item">{!! ucfirst($local) !!}</li>
         @endforeach
         <li class="active"></li>
     </ol>
-</div>
+</nav>

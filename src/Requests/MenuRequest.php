@@ -1,10 +1,10 @@
 <?php
 
-namespace Yab\Quarx\Requests;
+namespace Grafite\Cms\Requests;
 
 use Auth;
 use Gate;
-use Yab\Quarx\Models\Menu;
+use Grafite\Cms\Models\Menu;
 use Illuminate\Foundation\Http\FormRequest;
 
 class MenuRequest extends FormRequest
@@ -17,7 +17,7 @@ class MenuRequest extends FormRequest
     public function authorize()
     {
         if (config('app.env') !== 'testing') {
-            return Gate::allows('quarx', Auth::user());
+            return Gate::allows('cms', Auth::user());
         }
 
         return true;

@@ -1,8 +1,10 @@
 <?php
 
-namespace Yab\Quarx\Models;
+namespace Grafite\Cms\Models;
 
-class Analytics extends QuarxModel
+use Grafite\Cms\Models\CmsModel;
+
+class Analytics extends CmsModel
 {
     public $table = 'analytics';
 
