@@ -25,7 +25,15 @@
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <input id="blockName" type="text" class="form-control" placeholder="Slug">
+                    <select id="blockName" class="form-control">
+                        <option>Select Widget</option>
+                        <option value="hero_text">Hero Text</option>
+                        <option value="hero_image">Hero Image</option>
+                        <option value="blog_text">Blog Text</option>
+                        @foreach(\Yab\Quarx\Models\Widget::all() as $widget)
+                            <option value="{{ $widget->slug }}">{{ ucfirst($widget->slug) }}</option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
             <div class="modal-footer">

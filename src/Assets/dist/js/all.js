@@ -152,13 +152,6 @@ $(window).load(function() {
 });
 
 $(function(){
-    function _urlPrepare (title) {
-        return title.replace(/[^\w\s]/gi, '').replace(/ /g, '-').toLowerCase();
-    }
-
-    $('#Title, #Name').bind('keyup', function() {
-        $('#Url').val(_urlPrepare($(this).val()));
-    });
 
     $('.timepicker').datetimepicker({
         format: 'LT',
